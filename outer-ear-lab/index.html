@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Outer + Middle Ear Binaural Acoustics Lab</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="hero panel">
+        <div class="hero__copy">
+        <p class="eyebrow">Outer + Middle Ear + Binaural Acoustics Lab</p>
+          <h1>Interactive anatomy-to-binaural-HRIR renderer</h1>
+          <p class="hero__lede">
+            Follow sound from the outer ear to a complex left/right HRTF pair,
+            synthetic HRIRs, and a binaural audio render with adjustable
+            anatomy and source direction.
+          </p>
+        </div>
+        <div class="hero__stats">
+          <div class="stat-card">
+            <span class="stat-card__label">Model span</span>
+            <strong>20 Hz to 20 kHz</strong>
+          </div>
+          <div class="stat-card">
+            <span class="stat-card__label">Signal path</span>
+            <strong>Pinna to binaural HRIR</strong>
+          </div>
+          <div class="stat-card">
+            <span class="stat-card__label">Preview mode</span>
+            <strong>Complex HRTFs + audio</strong>
+          </div>
+        </div>
+      </header>
+
+      <main class="layout">
+        <aside class="panel controls">
+          <div class="section-heading">
+            <h2>Biological Controls</h2>
+            <p>Adjust the anatomy and watch the transfer function update.</p>
+          </div>
+
+          <section class="control-group">
+            <div class="control-group__heading">
+              <h3>Ear Canal</h3>
+              <p>Quarter-wave modes and simplified IEC 318 branches.</p>
+            </div>
+
+            <label class="control">
+              <div class="control__top">
+                <span>Canal length</span>
+                <output id="canalLengthMmValue">27.0 mm</output>
+              </div>
+              <input
+                type="range"
+                min="20"
+                max="40"
+                step="0.5"
+                value="27"
+                data-param="canalLengthMm"
+              />
+            </label>
+
+            <label class="control">
+              <div class="control__top">
+                <span>Canal diameter</span>
+                <output id="canalDiameterMmValue">7.0 mm</output>
+              </div>
+              <input
+                type="range"
+                min="4"
+                max="10"
+                step="0.1"
+                value="7"
+                data-param="canalDiameterMm"
+              />
+            </label>
+
+            <label class="toggle">
+              <input type="checkbox" id="iec318Enabled" checked />
+              <span>Include simplified IEC 318 equivalent-circuit branches</span>
+            </label>
+          </section>
+
+          <section class="control-group control-group--binaural">
+            <div class="control-group__heading">
+              <h3>Binaural Head Geometry</h3>
+              <p>ITD comes from a spherical-head path approximation; positive azimuth is to the listener's right.</p>
+            </div>
+
+            <label class="control">
+              <div class="control__top">
+                <span>Head radius</span>
+                <output id="headRadiusMmValue">87.5 mm</output>
+              </div>
+              <input
+                type="range"
+                min="65"
+                max="115"
+                step="0.5"
+                value="87.5"
+                data-param="headRadiusMm"
+              />
+            </label>
+
+            <div class="preset-actions" aria-label="Required direction presets">
+              <span>Required direction cases</span>
+              <div class="button-row">
+                <button id="medianPreset" class="button--secondary" type="button">Median 0°, 0°</button>
+                <button id="lateralPreset" class="button--secondary" type="button">Lateral +75°, 0°</button>
+                <button id="elevatedPreset" class="button--secondary" type="button">Elevated 0°, +45°</button>
+              </div>
+            </div>
+          </section>
+
+          <section class="control-group control-group--middle">
+            <div class="control-group__heading">
+              <h3>Middle Ear</h3>
+              <p>Middle-ear lumped impedances from the class circuit; the cochlear branch is used only as the terminating load.</p>
+            </div>
+
+            <label class="control">
+              <div class="control__top">
+                <span>Eardrum + ossicle inertance</span>
+                <output id="middleInertanceValue">0.0012 m.u.</output>
+              </div>
+              <input
+                type="range"
+                min="0.0004"
+                max="0.0030"
+                step="0.0001"
+                value="0.0012"
+                data-param="middleInertance"
+              />
+            </label>
+
+            <label class="control">
+              <div class="control__top">
+                <span>Eardrum compliance</span>
+                <output id="middleComplianceValue">0.000020 m.u.</output>
+              </div>
+              <input
+                type="range"
+                min="0.000008"
+                max="0.000060"
+                step="0.000001"
+                value="0.000020"
+                data-param="middleCompliance"
+              />
+            </label>
+
+            <label class="control">
+              <div class="control__top">
+                <span>Eardrum/joint resistance</span>
+                <output id="middleResistanceValue">0.65 m.u.</output>
+              </div>
+              <input
+                type="range"
+                min="0.10"
+                max="2.00"
+                step="0.05"
+                value="0.65"
+                data-param="middleResistance"
+              />
+            </label>
+
+            <label class="control">
+              <div class="control__top">
+                <span>Middle-ear cavity volume</span>
+                <output id="middleCavityVolumeCcValue">1.5 cc</output>
+              </div>
+              <input
+                type="range"
+                min="0.5"
+                max="3.0"
+                step="0.1"
+                value="1.5"
+                data-param="middleCavityVolumeCc"
+              />
+            </label>
+
+            <label class="control">
+              <div class="control__top">
+                <span>Incudo-stapedial compliance</span>
+                <output id="jointComplianceValue">0.000035 m.u.</output>
+              </div>
+              <input
+                type="range"
+                min="0.000012"
+                max="0.000080"
+                step="0.000001"
+                value="0.000035"
+                data-param="jointCompliance"
+              />
+            </label>
+
+            <label class="control">
+              <div class="control__top">
+                <span>Cochlear load resistance</span>
+                <output id="cochlearLoadValue">1.80 m.u.</output>
+              </div>
+              <input
+                type="range"
+                min="0.50"
+                max="4.00"
+                step="0.10"
+                value="1.80"
+                data-param="cochlearLoad"
+              />
+            </label>
+
+            <p class="microcopy topology-note">
+              Class topology: cavity series block, eardrum-loss shunt, ossicle
+              series block, then joint and cochlear-load shunt branches.
+            </p>
+          </section>
+
+          <section class="control-group">
+            <div class="control-group__heading">
+              <h3>Concha Cavity</h3>
+              <p>Helmholtz resonance from volume and aperture geometry.</p>
+            </div>
+
+            <label class="control">
+              <div class="control__top">
+                <span>Concha depth</span>
+                <output id="conchaDepthMmValue">12.0 mm</output>
+              </div>
+              <input
+                type="range"
+                min="5"
+                max="20"
+                step="0.5"
+                value="12"
+                data-param="conchaDepthMm"
+              />
+            </label>
+
+            <label class="control">
+              <div class="control__top">
+                <span>Concha volume</span>
+                <output id="conchaVolumeCcValue">3.0 cc</output>
+              </div>
+              <input
+                type="range"
+                min="1"
+                max="8"
+                step="0.1"
+                value="3"
+                data-param="conchaVolumeCc"
+              />
+            </label>
+
+            <label class="control">
+              <div class="control__top">
+                <span>Aperture radius</span>
+                <output id="conchaApertureMmValue">4.5 mm</output>
+              </div>
+              <input
+                type="range"
+                min="2"
+                max="8"
+                step="0.1"
+                value="4.5"
+                data-param="conchaApertureMm"
+              />
+            </label>
+          </section>
+
+          <section class="control-group">
+            <div class="control-group__heading">
+              <h3>Concha Reflector</h3>
+              <p>Parabolic-reflector approximation with a 2 kHz-ish break.</p>
+            </div>
+
+            <label class="control">
+              <div class="control__top">
+                <span>Reflector length L</span>
+                <output id="reflectorLengthMmValue">5.0 mm</output>
+              </div>
+              <input
+                type="range"
+                min="2"
+                max="12"
+                step="0.2"
+                value="5"
+                data-param="reflectorLengthMm"
+              />
+            </label>
+
+            <label class="control">
+              <div class="control__top">
+                <span>Reflector radius a</span>
+                <output id="reflectorRadiusMmValue">10.0 mm</output>
+              </div>
+              <input
+                type="range"
+                min="5"
+                max="18"
+                step="0.2"
+                value="10"
+                data-param="reflectorRadiusMm"
+              />
+            </label>
+          </section>
+
+          <section class="control-group">
+            <div class="control-group__heading">
+              <h3>Pinna Reflection</h3>
+              <p>Direction-dependent path difference and destructive interference.</p>
+            </div>
+
+            <label class="control">
+              <div class="control__top">
+                <span>Base reflection path</span>
+                <output id="reflectionPathMmValue">14.0 mm</output>
+              </div>
+              <input
+                type="range"
+                min="8"
+                max="24"
+                step="0.2"
+                value="14"
+                data-param="reflectionPathMm"
+              />
+            </label>
+
+            <label class="control">
+              <div class="control__top">
+                <span>Reflection strength</span>
+                <output id="reflectionStrengthValue">0.60</output>
+              </div>
+              <input
+                type="range"
+                min="0.05"
+                max="0.95"
+                step="0.01"
+                value="0.6"
+                data-param="reflectionStrength"
+              />
+            </label>
+
+            <label class="control">
+              <div class="control__top">
+                <span>Source azimuth</span>
+                <output id="azimuthDegValue">0 deg</output>
+              </div>
+              <input
+                type="range"
+                min="-90"
+                max="90"
+                step="1"
+                value="0"
+                data-param="azimuthDeg"
+              />
+            </label>
+
+            <label class="control">
+              <div class="control__top">
+                <span>Source elevation</span>
+                <output id="elevationDegValue">0 deg</output>
+              </div>
+              <input
+                type="range"
+                min="-45"
+                max="90"
+                step="1"
+                value="0"
+                data-param="elevationDeg"
+              />
+            </label>
+          </section>
+
+          <section class="control-group">
+            <div class="control-group__heading">
+              <h3>Actions</h3>
+              <p>Reset values or export a report-ready summary snippet.</p>
+            </div>
+
+            <div class="button-row">
+              <button id="resetButton" type="button">Reset parameters</button>
+              <button id="exportButton" type="button">Download report snippet</button>
+            </div>
+          </section>
+        </aside>
+
+        <section class="plots">
+          <div class="panel plot-card plot-card--wide">
+            <div class="plot-card__header">
+              <div>
+                <h2>Outer, Middle, and Combined Response</h2>
+                <p>Outer-ear transfer cascaded with the middle-ear transmission model.</p>
+              </div>
+              <div class="summary-chip" id="summaryChip">Calculating...</div>
+            </div>
+            <svg
+              id="combinedPlot"
+              class="plot"
+              viewBox="0 0 760 280"
+              role="img"
+              aria-label="Combined frequency response plot"
+            ></svg>
+          </div>
+
+          <section class="panel plot-card plot-card--wide binaural-card">
+            <div class="plot-card__header">
+              <div>
+                <h2>Synthetic Binaural Renderer</h2>
+                <p>Complex HRTFs are evaluated as frequency responses, then inverse FFT'd into the left/right HRIR pair.</p>
+              </div>
+              <div class="summary-chip" id="binauralSummaryChip">Calculating binaural cues...</div>
+            </div>
+
+            <div class="spatial-cue-panel">
+              <div>
+                <h3>Live Source → Head → IR Cue Map</h3>
+                <p>Move the source controls to see the incoming direction, contralateral shadow, and the left/right IR arrivals move together.</p>
+              </div>
+              <svg
+                id="spatialCuePlot"
+                class="spatial-cue-plot"
+                viewBox="0 0 760 260"
+                role="img"
+                aria-label="Live source direction, head shadow, and left right impulse response arrival diagram"
+              ></svg>
+            </div>
+
+            <div class="plot-grid">
+              <div class="plot-card__subsection">
+                <h3>Left / Right HRTF Magnitude</h3>
+                <p>Ear canal, concha/pinna, head shadow, and delay combined.</p>
+                <svg
+                  id="hrtfPlot"
+                  class="plot plot--small"
+                  viewBox="0 0 360 220"
+                  role="img"
+                  aria-label="Left and right HRTF magnitude plot"
+                ></svg>
+              </div>
+
+              <div class="plot-card__subsection">
+                <h3>Left / Right HRIR</h3>
+                <p>Real impulse responses generated from the complex HRTF pair.</p>
+                <svg
+                  id="hrirPlot"
+                  class="plot plot--small"
+                  viewBox="0 0 360 220"
+                  role="img"
+                  aria-label="Left and right HRIR plot"
+                ></svg>
+              </div>
+
+              <div class="plot-card__subsection">
+                <h3>Interaural Level Difference</h3>
+                <p>Right minus left level; head shadow strengthens at high frequency.</p>
+                <svg
+                  id="ildPlot"
+                  class="plot plot--small"
+                  viewBox="0 0 360 220"
+                  role="img"
+                  aria-label="Interaural level difference by frequency plot"
+                ></svg>
+              </div>
+
+              <div class="binaural-readout-card">
+                <h3>Estimated Interaural Cues</h3>
+                <p>Measured from the synthetic HRIRs and HRTFs displayed here.</p>
+                <div id="binauralMarkerList" class="marker-list"></div>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel result-card direction-check-card">
+            <h2>Required Three-Direction Check</h2>
+            <p>Use the three preset buttons above to load each complete plot set. This comparison summarizes the expected cue trend for the same current anatomy.</p>
+            <div id="directionCheckList" class="direction-check-list"></div>
+          </section>
+
+          <div class="plot-grid middle-plot-grid">
+            <div class="panel plot-card">
+              <div class="plot-card__header plot-card__header--compact">
+                <div>
+                  <h3>Middle-Ear Transmission</h3>
+                  <p>Magnitude from the middle-ear input to the cochlear load.</p>
+                </div>
+              </div>
+              <svg
+                id="middlePlot"
+                class="plot plot--small"
+                viewBox="0 0 360 220"
+                role="img"
+                aria-label="Middle-ear transmission magnitude plot"
+              ></svg>
+            </div>
+
+            <div class="panel plot-card">
+              <div class="plot-card__header plot-card__header--compact">
+                <div>
+                  <h3>Middle-Ear Transmission Phase</h3>
+                  <p>Phase of the modeled pressure transfer function.</p>
+                </div>
+              </div>
+              <svg
+                id="middlePhasePlot"
+                class="plot plot--small"
+                viewBox="0 0 360 220"
+                role="img"
+                aria-label="Middle-ear transmission phase plot"
+              ></svg>
+            </div>
+
+            <div class="panel plot-card">
+              <div class="plot-card__header plot-card__header--compact">
+                <div>
+                  <h3>Middle-Ear Input Impedance</h3>
+                  <p>Magnitude of the input impedance in model units.</p>
+                </div>
+              </div>
+              <svg
+                id="middleImpedancePlot"
+                class="plot plot--small"
+                viewBox="0 0 360 220"
+                role="img"
+                aria-label="Middle-ear input impedance plot"
+              ></svg>
+            </div>
+          </div>
+
+          <div class="plot-grid">
+            <div class="panel plot-card">
+              <div class="plot-card__header plot-card__header--compact">
+                <div>
+                  <h3>Concha Reflector</h3>
+                  <p>Parabolic gain rise above the break frequency.</p>
+                </div>
+              </div>
+              <svg
+                id="reflectorPlot"
+                class="plot plot--small"
+                viewBox="0 0 360 220"
+                role="img"
+                aria-label="Concha reflector response plot"
+              ></svg>
+            </div>
+
+            <div class="panel plot-card">
+              <div class="plot-card__header plot-card__header--compact">
+                <div>
+                  <h3>Concha Cavity</h3>
+                  <p>Helmholtz-like resonance from volume and opening.</p>
+                </div>
+              </div>
+              <svg
+                id="conchaPlot"
+                class="plot plot--small"
+                viewBox="0 0 360 220"
+                role="img"
+                aria-label="Concha cavity response plot"
+              ></svg>
+            </div>
+
+            <div class="panel plot-card">
+              <div class="plot-card__header plot-card__header--compact">
+                <div>
+                  <h3>Ear Canal</h3>
+                  <p>Quarter-wave resonances with optional IEC 318 branches.</p>
+                </div>
+              </div>
+              <svg
+                id="canalPlot"
+                class="plot plot--small"
+                viewBox="0 0 360 220"
+                role="img"
+                aria-label="Ear canal response plot"
+              ></svg>
+            </div>
+
+            <div class="panel plot-card">
+              <div class="plot-card__header plot-card__header--compact">
+                <div>
+                  <h3>Pinna Reflection</h3>
+                  <p>Comb-style interference from delayed reflected sound.</p>
+                </div>
+              </div>
+              <svg
+                id="reflectionPlot"
+                class="plot plot--small"
+                viewBox="0 0 360 220"
+                role="img"
+                aria-label="Pinna reflection response plot"
+              ></svg>
+            </div>
+          </div>
+
+          <div class="panel plot-card plot-card--wide">
+            <div class="plot-card__header sweep-header">
+              <div>
+                <h2>Real-Time Parameter Sweep</h2>
+                <p>Overlay combined responses across the selected parameter range.</p>
+              </div>
+              <div class="sweep-controls">
+                <label class="select-control">
+                  <span>Swept parameter</span>
+                  <select id="sweepParameter"></select>
+                </label>
+                <label class="select-control">
+                  <span>Trace count</span>
+                  <select id="sweepTraceCount">
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7" selected>7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                  </select>
+                </label>
+              </div>
+            </div>
+            <svg
+              id="sweepPlot"
+              class="plot"
+              viewBox="0 0 760 280"
+              role="img"
+              aria-label="Parameter sweep plot"
+            ></svg>
+          </div>
+
+          <div class="results-grid">
+            <div class="panel result-card">
+              <h2>Calculated Markers</h2>
+              <div id="markerList" class="marker-list"></div>
+            </div>
+
+            <div class="panel result-card">
+              <h2>Model Equations</h2>
+              <div class="equation-list">
+                <p><code>f_break = c / (16a)</code></p>
+                <p><code>f_H = c / (2pi) * sqrt(A / (V L_eff))</code></p>
+                <p><code>f_n = n c / (4 L_eff)</code></p>
+                <p><code>f_notch = c / (2 r_eff)</code></p>
+                <p><code>Z_R = R, Z_L = jωL, Z_C = 1/(jωC)</code></p>
+                <p><code>Z_cavity = (Z_CP + Z_LA + R_A) || R_M || Z_CT</code></p>
+                <p><code>Z_eardrum = Z_CD1 + (Z_LD || (Z_CD2 + R_D2)) + R_D1</code></p>
+                <p><code>Z_distal = Z_joint || Z_cochlea</code></p>
+                <p><code>Z_in = Z_cavity + (Z_eardrum || (Z_ossicles + Z_distal))</code></p>
+                <p><code>H_total = H_outer × H_middle</code></p>
+              </div>
+              <p class="microcopy">
+                These equations follow the class notes and use a simplified
+                damping model so the plots stay finite and interactive.
+              </p>
+            </div>
+
+            <div class="panel result-card">
+              <h2>Binaural Audio Preview</h2>
+              <div class="audio-controls">
+                <div class="button-row">
+                  <button id="playNoiseButton" type="button">Play noise</button>
+                  <button id="playSweepButton" type="button">Play sweep</button>
+                  <button id="stopAudioButton" type="button">Stop</button>
+                </div>
+                <label class="file-control">
+                  <span>Upload audio</span>
+                  <input id="audioFileInput" type="file" accept="audio/*" />
+                </label>
+                <div class="button-row">
+                  <button id="playFileButton" type="button" disabled>
+                    Play uploaded audio
+                  </button>
+                  <button id="downloadBinauralButton" class="button--secondary" type="button">
+                    Download 1.5 s render
+                  </button>
+                </div>
+              </div>
+              <p class="microcopy">
+                Audio is convolved independently with the displayed left and
+                right HRIRs, then sent to the stereo output. Headphones make
+                the directional cues easiest to hear.
+              </p>
+              <div id="audioStatus" class="audio-status">Audio idle.</div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="app.js?v=binaural-hrir-1"></script>
+  </body>
+</html>
